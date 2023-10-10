@@ -1,0 +1,117 @@
+#include <iostream>
+#include <GL/glew.h>
+#include <GL/freeglut.h> 
+
+float angleX = 0.0f;
+float angleY = 0.0f;
+
+// Drawing routine.
+void drawScene(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(0.9, 0.9, 0.9); // Set the color to a light gray for the whiteboard
+    glLoadIdentity();
+
+    // Modeling transformations.
+    glTranslatef(0.0, 0.0, -15.0);
+    glRotatef(angleX, 1.0, 0.0, 0.0); // Rotate around X-axis
+    glRotatef(angleY, 0.0, 1.0, 0.0); // Rotate around Y-axis
+
+    // Draw a thicker whiteboard.
+    glPushMatrix();
+    glScalef(8.0, 4.0, 0.21); // Scale the whiteboard to make it thicker
+    glutSolidCube(1.0);
+    glPopMatrix();
+
+    // Draw the black bezel around the whiteboard.
+    glColor3f(0.0, 0.0, 0.0); // Set the color to black for the bezel
+    glPushMatrix();
+    glScalef(8.2, 4.2, 0.2); // Slightly larger and thinner than the whiteboard
+    glutSolidCube(1.0);
+    glPopMatrix();
+
+    glFlush();
+    glutSwapBuffers();
+}
+
+
+
+
+// Initialization routine.
+void setup(void)
+{
+    glClearColor(1.0, 1.0, 1.0, 0.0); // Set the clear color to white
+    glEnable(GL_DEPTH_TEST); // Enable depth testing for 3D rendering.
+}
+
+// OpenGL window reshape routine.
+void resize(int w, int h)
+{
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (float)w / (float)h, 1.0, 100.0); // Perspective projection.
+
+    glMatrixMode(GL_MODELVIEW);
+}
+
+// Keyboard input processing routine.
+void keyInput(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case 27: // Escape key
+        exit(0);
+        break;
+    default:
+        break;
+    }
+}
+
+// Special keyboard input processing routine for arrow keys.
+void specialKeyInput(int key, int x, int y)
+{
+    switch (key)
+    {
+    case GLUT_KEY_LEFT:
+        angleY -= 5.0;
+        break;
+    case GLUT_KEY_RIGHT:
+        angleY += 5.0;
+        break;
+    case GLUT_KEY_UP:
+        angleX -= 5.0;
+        break;
+    case GLUT_KEY_DOWN:
+        angleX += 5.0;
+        break;
+    }
+    glutPostRedisplay(); // Redraw the scene with the new rotation angles.
+}
+
+// Main routine.
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+
+    glutInitContextVersion(4, 3);
+    glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
+
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH); // Use double buffering and enable depth buffer.
+    glutInitWindowSize(500, 500);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("3D Whiteboard");
+
+    glutDisplayFunc(drawScene);
+    glutReshapeFunc(resize);
+    glutKeyboardFunc(keyInput);
+    glutSpecialFunc(specialKeyInput); // Register the special key input function.
+
+    glewExperimental = GL_TRUE;
+    glewInit();
+
+    setup();
+
+    glutMainLoop();
+    return 0;
+}
