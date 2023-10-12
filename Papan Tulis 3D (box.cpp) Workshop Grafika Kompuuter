@@ -1,4 +1,6 @@
 kode ini akan berfungsi di box.cpp
+gunakan tombol panah untuk menggerakan output
+
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h> 
