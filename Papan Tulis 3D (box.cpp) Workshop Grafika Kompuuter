@@ -1,3 +1,4 @@
+kode ini akan berfungsi di box.cpp
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h> 
