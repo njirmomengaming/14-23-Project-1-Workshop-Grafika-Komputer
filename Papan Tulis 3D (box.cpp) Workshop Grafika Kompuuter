@@ -8,6 +8,9 @@ gunakan tombol panah untuk menggerakan output
 float angleX = 0.0f;
 float angleY = 0.0f;
 
+int mouseX, mouseY;
+bool isMouseDragging = false;
+
 // Drawing routine.
 void drawScene(void)
 {
@@ -36,9 +39,6 @@ void drawScene(void)
     glFlush();
     glutSwapBuffers();
 }
-
-
-
 
 // Initialization routine.
 void setup(void)
@@ -92,6 +92,42 @@ void specialKeyInput(int key, int x, int y)
     glutPostRedisplay(); // Redraw the scene with the new rotation angles.
 }
 
+// Mouse button callback function.
+void mouse(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON)
+    {
+        if (state == GLUT_DOWN)
+        {
+            isMouseDragging = true;
+            mouseX = x;
+            mouseY = y;
+        }
+        else if (state == GLUT_UP)
+        {
+            isMouseDragging = false;
+        }
+    }
+}
+
+// Mouse motion callback function.
+void mouseMotion(int x, int y)
+{
+    if (isMouseDragging)
+    {
+        int dx = x - mouseX;
+        int dy = y - mouseY;
+
+        angleY += static_cast<float>(dx) * 0.5f;
+        angleX += static_cast<float>(dy) * 0.5f;
+
+        mouseX = x;
+        mouseY = y;
+
+        glutPostRedisplay(); // Redraw the scene with the new rotation angles.
+    }
+}
+
 // Main routine.
 int main(int argc, char** argv)
 {
@@ -109,6 +145,8 @@ int main(int argc, char** argv)
     glutReshapeFunc(resize);
     glutKeyboardFunc(keyInput);
     glutSpecialFunc(specialKeyInput); // Register the special key input function.
+    glutMouseFunc(mouse); // Register the mouse button callback.
+    glutMotionFunc(mouseMotion); // Register the mouse motion callback.
 
     glewExperimental = GL_TRUE;
     glewInit();
