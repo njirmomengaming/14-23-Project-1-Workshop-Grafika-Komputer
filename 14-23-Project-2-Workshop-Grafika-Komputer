@@ -1,0 +1,214 @@
+#include <iostream>
+#include <GL/glew.h>
+#include <GL/freeglut.h>
+#include "getBMP.h" // Assuming getBMP.h is in the same directory
+
+GLuint textureID;
+
+float angleX = 0.0f;
+float angleY = 0.0f;
+float toX = 1.0f;
+float toY = 1.0f;
+float rotationSpeed = 0.001f;
+
+int mouseX, mouseY;
+bool isMouseDragging = false;
+
+void loadTexture(const char* fileName)
+{
+    // Use getBMP function to load the BMP file
+    imageFile* textureImage = getBMP(fileName);
+
+    // Generate texture ID and bind the texture
+    glGenTextures(1, &textureID);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Specify texture parameters
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    // Load texture data
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage->width, textureImage->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage->data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    // Free the image data
+    delete[] textureImage->data;
+    delete textureImage;
+}
+
+void drawTexturedCube()
+{
+    glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, textureID);
+
+    // Draw the front face of the white box with texture
+    glBegin(GL_QUADS);
+    glTexCoord2f(0.0f, 0.0f); glVertex3f(-0.5f, -0.5f, 0.5f);
+    glTexCoord2f(1.0f, 0.0f); glVertex3f(0.5f, -0.5f, 0.5f);
+    glTexCoord2f(1.0f, 1.0f); glVertex3f(0.5f, 0.5f, 0.5f);
+    glTexCoord2f(0.0f, 1.0f); glVertex3f(-0.5f, 0.5f, 0.5f);
+    glEnd();
+
+    glDisable(GL_TEXTURE_2D);
+}
+
+void drawScene(void)
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3f(0.9, 0.9, 0.9);
+    glLoadIdentity();
+
+    glTranslatef(toX, toY, -15.0);
+    glRotatef(angleX, 1.0, 0.0, 0.0);
+    glRotatef(angleY, 0.0, 1.0, 0.0);
+
+    // Draw the white box
+    glPushMatrix();
+    glScalef(8.0, 4.0, 0.21);
+    drawTexturedCube();
+    glPopMatrix();
+
+    // Draw the black border
+    glColor3f(0.0, 0.0, 0.0);
+    glPushMatrix();
+    glScalef(8.2, 4.2, 0.2);
+    glutSolidCube(1.0);
+    glPopMatrix();
+
+    glFlush();
+    glutSwapBuffers();
+}
+
+void update(int value)
+{
+    angleY += rotationSpeed;
+    glutPostRedisplay();
+    glutTimerFunc(16, update, 0); // Setel timer untuk memanggil fungsi update setiap 16ms (sekitar 60 FPS)
+}
+
+void idleCallback(void)
+{
+    update(0); // You can pass any value you like here
+}
+
+void setup(void)
+{
+    glClearColor(1.0, 1.0, 1.0, 0.0);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void resize(int w, int h)
+{
+    glViewport(0, 0, w, h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(60.0, (float)w / (float)h, 1.0, 100.0);
+
+    glMatrixMode(GL_MODELVIEW);
+}
+
+void keyInput(unsigned char key, int x, int y)
+{
+    switch (key)
+    {
+    case 27: // Escape key
+        exit(0);
+        break;
+    default:
+        break;
+    }
+}
+
+void specialKeyInput(int key, int x, int y)
+{
+    switch (key)
+    {
+    case GLUT_KEY_LEFT:
+        angleY -= 5.0;
+        break;
+    case GLUT_KEY_RIGHT:
+        angleY += 5.0;
+        break;
+    case GLUT_KEY_UP:
+        angleX -= 5.0;
+        break;
+    case GLUT_KEY_DOWN:
+        angleX += 5.0;
+        break;
+    case GLUT_KEY_SHIFT_L:
+        toX -= 5.0;
+        break;
+    case GLUT_KEY_SHIFT_R:
+        toX += 5.0;
+        break;
+    }
+    glutPostRedisplay();
+}
+
+void mouse(int button, int state, int x, int y)
+{
+    if (button == GLUT_LEFT_BUTTON)
+    {
+        if (state == GLUT_DOWN)
+        {
+            isMouseDragging = true;
+            mouseX = x;
+            mouseY = y;
+        }
+        else if (state == GLUT_UP)
+        {
+            isMouseDragging = false;
+        }
+    }
+}
+
+void mouseMotion(int x, int y)
+{
+    if (isMouseDragging)
+    {
+        int dx = x - mouseX;
+        int dy = y - mouseY;
+
+        angleY += static_cast<float>(dx) * 0.5f;
+        angleX += static_cast<float>(dy) * 0.5f;
+
+        mouseX = x;
+        mouseY = y;
+
+        glutPostRedisplay();
+    }
+}
+
+int main(int argc, char** argv)
+{
+    glutInit(&argc, argv);
+
+    glutInitContextVersion(4, 3);
+    glutInitContextProfile(GLUT_COMPATIBILITY_PROFILE);
+
+    glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGBA | GLUT_DEPTH);
+    glutInitWindowSize(500, 500);
+    glutInitWindowPosition(100, 100);
+    glutCreateWindow("3D Whiteboard");
+
+    glutDisplayFunc(drawScene);
+    glutReshapeFunc(resize);
+    glutKeyboardFunc(keyInput);
+    glutSpecialFunc(specialKeyInput);
+    glutMouseFunc(mouse);
+    glutMotionFunc(mouseMotion);
+
+    glewExperimental = GL_TRUE;
+    glewInit();
+
+    setup();
+
+    // Menambahkan glutIdleFunc untuk memanggil idleCallback secara terus menerus
+    glutIdleFunc(idleCallback);
+    loadTexture("../../Textures/launch.bmp");
+
+    glutMainLoop();
+    return 0;
+}
