@@ -13,7 +13,7 @@ float angleY = 0.0f;
 float toX = 1.0f;
 float toY = 1.0f;
 float rotationSpeed = 0.001f;
-GLfloat lightPosition[] = { 0.0, 20.0, 0.0, 1.0 }; // Initial light position
+GLfloat lightPosition[] = { 0.0, 20.0, 0.0, 1.0 };
 
 float lightMovement = 0.0f;
 
@@ -22,24 +22,24 @@ bool isMouseDragging = false;
 
 void loadTexture(const char* fileName)
 {
-    // Use getBMP function to load the BMP file
+    
     imageFile* textureImage = getBMP(fileName);
 
-    // Generate texture ID and bind the texture
+    
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Specify texture parameters
+    
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-    // Load texture data
+    
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, textureImage->width, textureImage->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, textureImage->data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
-    // Free the image data
+    
     delete[] textureImage->data;
     delete textureImage;
 }
@@ -49,7 +49,7 @@ void drawTexturedCube()
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, textureID);
 
-    // Draw the front face of the white box with texture
+    
     glBegin(GL_QUADS);
     glTexCoord2f(0.0f, 0.0f); glVertex3f(-0.5f, -0.5f, 0.5f);
     glTexCoord2f(1.0f, 0.0f); glVertex3f(0.5f, -0.5f, 0.5f);
@@ -70,24 +70,24 @@ void drawScene(void)
     glRotatef(angleX, 1.0, 0.0, 0.0);
     glRotatef(angleY, 0.0, 1.0, 0.0);
 
-    // Lighting setup
+    
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
 
-    // Move light position horizontally (side to side)
+    
     lightMovement += 0.01f; // Adjust the speed of light movement
-    lightPosition[0] = 10.0f * sin(lightMovement); // Update light position based on a sine function
+    lightPosition[0] = 10.0f * sin(lightMovement); 
     lightPosition[2] = 10.0f * cos(lightMovement);
 
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
-    // Reset light position if it goes beyond a certain limit
+    
     if (lightPosition[0] > 10.0f) {
         lightPosition[0] = -10.0f;
     }
 
-    // Material properties
-    GLfloat ambient[] = { 2.0, 2.0, 2.0, 2.0 }; // Increase ambient intensity for brighter texture
+    
+    GLfloat ambient[] = { 2.0, 2.0, 2.0, 2.0 }; 
     GLfloat diffuse[] = { 2.0, 2.0, 2.0, 2.0 };
     GLfloat specular[] = { 2.0, 2.0, 2.0, 2.0 };
     GLfloat shininess = 10.0;
@@ -97,13 +97,13 @@ void drawScene(void)
     glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
     glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 
-    // Draw the white box
+    
     glPushMatrix();
     glScalef(8.0, 4.0, 0.21);
     drawTexturedCube();
     glPopMatrix();
 
-    // Draw the black border
+    
     glColor3f(0.0, 0.0, 0.0);
     glPushMatrix();
     glScalef(8.2, 4.2, 0.2);
@@ -147,7 +147,7 @@ void keyInput(unsigned char key, int x, int y)
 {
     switch (key)
     {
-    case 27: // Escape key
+    case 27: 
         exit(0);
         break;
     default:
