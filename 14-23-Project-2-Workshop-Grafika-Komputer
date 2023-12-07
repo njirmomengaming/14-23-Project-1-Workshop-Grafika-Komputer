@@ -1,7 +1,10 @@
+// Arya Yudistira Pratama - 5222600014
+// Mohammad Aditya Rahman - 5222600023
 #include <iostream>
 #include <GL/glew.h>
 #include <GL/freeglut.h>
-#include "getBMP.h" // Assuming getBMP.h is in the same directory
+#include "getBMP.h"
+#include <cmath>
 
 GLuint textureID;
 
@@ -10,6 +13,9 @@ float angleY = 0.0f;
 float toX = 1.0f;
 float toY = 1.0f;
 float rotationSpeed = 0.001f;
+GLfloat lightPosition[] = { 0.0, 20.0, 0.0, 1.0 }; // Initial light position
+
+float lightMovement = 0.0f;
 
 int mouseX, mouseY;
 bool isMouseDragging = false;
@@ -57,12 +63,39 @@ void drawTexturedCube()
 void drawScene(void)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3f(0.9, 0.9, 0.9);
+    glColor3f(1.0, 1.0, 1.0);
     glLoadIdentity();
 
     glTranslatef(toX, toY, -15.0);
     glRotatef(angleX, 1.0, 0.0, 0.0);
     glRotatef(angleY, 0.0, 1.0, 0.0);
+
+    // Lighting setup
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);
+
+    // Move light position horizontally (side to side)
+    lightMovement += 0.01f; // Adjust the speed of light movement
+    lightPosition[0] = 10.0f * sin(lightMovement); // Update light position based on a sine function
+    lightPosition[2] = 10.0f * cos(lightMovement);
+
+    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+    // Reset light position if it goes beyond a certain limit
+    if (lightPosition[0] > 10.0f) {
+        lightPosition[0] = -10.0f;
+    }
+
+    // Material properties
+    GLfloat ambient[] = { 2.0, 2.0, 2.0, 2.0 }; // Increase ambient intensity for brighter texture
+    GLfloat diffuse[] = { 2.0, 2.0, 2.0, 2.0 };
+    GLfloat specular[] = { 2.0, 2.0, 2.0, 2.0 };
+    GLfloat shininess = 10.0;
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, ambient);
+    glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuse);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, specular);
+    glMaterialf(GL_FRONT, GL_SHININESS, shininess);
 
     // Draw the white box
     glPushMatrix();
@@ -77,6 +110,7 @@ void drawScene(void)
     glutSolidCube(1.0);
     glPopMatrix();
 
+    glDisable(GL_LIGHTING);
     glFlush();
     glutSwapBuffers();
 }
@@ -85,12 +119,12 @@ void update(int value)
 {
     angleY += rotationSpeed;
     glutPostRedisplay();
-    glutTimerFunc(16, update, 0); // Setel timer untuk memanggil fungsi update setiap 16ms (sekitar 60 FPS)
+    glutTimerFunc(16, update, 0);
 }
 
 void idleCallback(void)
 {
-    update(0); // You can pass any value you like here
+    update(0);
 }
 
 void setup(void)
@@ -205,9 +239,8 @@ int main(int argc, char** argv)
 
     setup();
 
-    // Menambahkan glutIdleFunc untuk memanggil idleCallback secara terus menerus
     glutIdleFunc(idleCallback);
-    loadTexture("../../Textures/launch.bmp");
+    loadTexture("../../Textures/tembok.bmp");
 
     glutMainLoop();
     return 0;
